@@ -1,0 +1,50 @@
+kernel:
+  image: linuxkit/kernel:5.4.30
+  cmdline: "console=tty0 console=ttyS0"
+init:
+  - linuxkit/init:a0246dd478a24abbee0a4cede99662ffc4931691
+  - linuxkit/runc:69b4a35eaa22eba4990ee52cccc8f48f6c08ed03
+  - linuxkit/containerd:09553963ed9da626c25cf8acdf6d62ec37645412
+  - linuxkit/ca-certificates:v0.7
+onboot:
+  - name: sysctl
+    image: linuxkit/sysctl:v0.7
+  - name: dhcpcd
+    image: linuxkit/dhcpcd:v0.7
+    command: ["/sbin/dhcpcd", "--nobackground", "-f", "/dhcpcd.conf", "-1"]
+  - name: booty
+    image: plndr/booty:0.1
+    binds:
+     - /dev:/dev
+    capabilities:
+     - all
+onshutdown:
+  - name: shutdown
+    image: busybox:latest
+    command: ["/bin/echo", "so long and thanks for all the fish"]
+files:
+  - path: etc/linuxkit-config
+    metadata: yaml
+  - path: etc/containerd/config.toml
+    contents: |
+      state = "/run/containerd"
+      root = "/var/lib/containerd"
+      snapshotter = "io.containerd.snapshotter.v1.overlayfs"
+      differ = "io.containerd.differ.v1.base-diff"
+      subreaper = false
+
+      [grpc]
+      address = "/run/containerd/containerd.sock"
+      uid = 0
+      gid = 0
+
+      [debug]
+      address = "/run/containerd/debug.sock"
+      level = "fatal"
+
+      [metrics]
+      address = ":13337"
+trust:
+  org:
+    - linuxkit
+    - library
