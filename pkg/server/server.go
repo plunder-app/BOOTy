@@ -12,7 +12,15 @@ import (
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
 
-	imageName := fmt.Sprintf("%s.img", r.Host)
+	imageName := fmt.Sprintf("%s.img", r.RemoteAddr)
+
+	r.ParseMultipartForm(32 << 20)
+	file, _, err := r.FormFile("BootyImage")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer file.Close()
 
 	var out io.Writer
 	f, err := os.OpenFile(imageName, os.O_CREATE|os.O_WRONLY, 0644)
@@ -21,18 +29,18 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	out = f
 	defer f.Close()
-
 	bar := progressbar.NewOptions(
-		int(r.ContentLength),
+		-1,
 		progressbar.OptionShowBytes(true),
 	)
+
 	out = io.MultiWriter(out, bar)
 	fmt.Printf("\n\n\n")
 
 	fmt.Printf("Beginning write of image [%s] to disk", imageName)
 	fmt.Printf("\n\n\n")
 
-	count, err := io.Copy(out, r.Body)
+	count, err := io.Copy(out, file)
 	if err != nil {
 		log.Fatalf("Error writing %d bytes to [%s] -> %v", count, imageName, err)
 	}

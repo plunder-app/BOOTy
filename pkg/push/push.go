@@ -44,53 +44,16 @@ func Image() {
 		dst = envDst
 	}
 
-	// req, err := http.NewRequest("GET", src, nil)
-	// if err != nil {
-	// 	log.Fatalf("%v", err)
-	// }
+	// TODO - consider timeouts
 
-	// resp, err := http.DefaultClient.Do(req)
-	// if err != nil {
-	// 	log.Fatalf("%v", err)
-	// }
-	// defer resp.Body.Close()
-
-	// var out io.Writer
-	// f, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY, 0644)
-	// if err != nil {
-	// 	log.Fatalf("%v", err)
-	// }
-	// out = f
-	// defer f.Close()
-
-	// bar := progressbar.NewOptions(
-	// 	int(resp.ContentLength),
-	// 	progressbar.OptionShowBytes(true),
-	// )
-	// out = io.MultiWriter(out, bar)
-	r, w := io.Pipe()
-	m := multipart.NewWriter(w)
-	go func() {
-		defer w.Close()
-		defer m.Close()
-		part, err := m.CreateFormFile("file", filepath.Base(src))
-		if err != nil {
-			log.Fatalf("%v", err)
-		}
-		file, err := os.Open(src)
-		if err != nil {
-			return
-		}
-		defer file.Close()
-		if count, err := io.Copy(part, file); err != nil {
-			log.Fatalf("Error writing %d bytes to [%s] -> %v", count, filepath.Base(src), err)
-		}
-	}()
-	http.Post(dst, m.FormDataContentType(), r)
-
+	client := &http.Client{}
+	_, err = UploadMultipartFile(client, dst, "BootyImage", src)
+	if err != nil {
+		log.Fatalln(err)
+	}
 	fmt.Printf("\n\n\n")
 
-	fmt.Printf("Beginning write of image [%s] to disk [%s]", filepath.Base(src), dst)
+	fmt.Printf("Reading of disk [%s], and sending to [%s]", filepath.Base(src), dst)
 	fmt.Printf("\n\n\n")
 
 	fmt.Printf("\n\n\n")
@@ -99,7 +62,7 @@ func Image() {
 	fmt.Printf("\n\n\n\n")
 
 	// TODO - reboot
-	fmt.Println("This is where the reboot happens :-D")
+	fmt.Println("This is where the push reboot happens :-D")
 
 	kb, err := keybd_event.NewKeyBonding()
 	if err != nil {
@@ -115,4 +78,57 @@ func Image() {
 
 	//launch
 	kb.Launching()
+}
+
+//UploadMultipartFile -
+func UploadMultipartFile(client *http.Client, uri, key, path string) (*http.Response, error) {
+	body, writer := io.Pipe()
+
+	req, err := http.NewRequest(http.MethodPost, uri, body)
+	if err != nil {
+		return nil, err
+	}
+
+	mwriter := multipart.NewWriter(writer)
+	req.Header.Add("Content-Type", mwriter.FormDataContentType())
+
+	errchan := make(chan error)
+
+	go func() {
+		defer close(errchan)
+		defer writer.Close()
+		defer mwriter.Close()
+
+		w, err := mwriter.CreateFormFile(key, path)
+		if err != nil {
+			errchan <- err
+			return
+		}
+
+		in, err := os.Open(path)
+		if err != nil {
+			errchan <- err
+			return
+		}
+		defer in.Close()
+
+		if written, err := io.Copy(w, in); err != nil {
+			errchan <- fmt.Errorf("error copying %s (%d bytes written): %v", path, written, err)
+			return
+		}
+
+		if err := mwriter.Close(); err != nil {
+			errchan <- err
+			return
+		}
+	}()
+
+	resp, err := client.Do(req)
+	merr := <-errchan
+
+	if err != nil || merr != nil {
+		return resp, fmt.Errorf("http error: %v, multipart error: %v", err, merr)
+	}
+
+	return resp, nil
 }
