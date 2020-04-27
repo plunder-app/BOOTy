@@ -6,9 +6,34 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
-	"github.com/schollz/progressbar"
+	"github.com/dustin/go-humanize"
 )
+
+// WriteCounter counts the number of bytes written to it. It implements to the io.Writer interface
+// and we can pass this into io.TeeReader() which will report progress on each write cycle.
+type WriteCounter struct {
+	Total uint64
+}
+
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Total += uint64(n)
+	wc.PrintProgress()
+	return n, nil
+}
+
+//PrintProgress -
+func (wc WriteCounter) PrintProgress() {
+	// Clear the line by using a character return to go back to the start and remove
+	// the remaining characters by filling it with spaces
+	fmt.Printf("\r%s", strings.Repeat(" ", 35))
+
+	// Return again and print current status of download
+	// We use the humanize package to print the bytes in a meaningful way (e.g. 10 MB)
+	fmt.Printf("\rDownloading... %s complete", humanize.Bytes(wc.Total))
+}
 
 func imageHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -22,28 +47,20 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	var out io.Writer
-	f, err := os.OpenFile(imageName, os.O_CREATE|os.O_WRONLY, 0644)
+	out, err := os.OpenFile(imageName, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatalf("%v", err)
 	}
-	out = f
-	defer f.Close()
-	bar := progressbar.NewOptions(
-		-1,
-		progressbar.OptionShowBytes(true),
-	)
+	defer out.Close()
 
-	out = io.MultiWriter(out, bar)
-	fmt.Printf("\n\n\n")
+	// Create our progress reporter and pass it to be used alongside our writer
+	counter := &WriteCounter{}
+	if _, err = io.Copy(out, io.TeeReader(file, counter)); err != nil {
+		log.Fatalf("%v", err)
+	}
 
 	fmt.Printf("Beginning write of image [%s] to disk", imageName)
-	fmt.Printf("\n\n\n")
 
-	count, err := io.Copy(out, file)
-	if err != nil {
-		log.Fatalf("Error writing %d bytes to [%s] -> %v", count, imageName, err)
-	}
 	w.WriteHeader(http.StatusOK)
 }
 
