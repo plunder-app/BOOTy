@@ -110,6 +110,7 @@ func UploadMultipartFile(client *http.Client, uri, key, path string) (*http.Resp
 			errchan <- err
 			return
 		}
+
 		defer in.Close()
 
 		if written, err := io.Copy(w, in); err != nil {
