@@ -1,5 +1,4 @@
 FROM gcc:latest as LVM
-
 RUN wget https://mirrors.kernel.org/sourceware/lvm2/LVM2.2.03.09.tgz
 RUN tar -xf LVM2.2.03.09.tgz
 WORKDIR LVM2.2.03.09
@@ -15,31 +14,24 @@ RUN  gcc -O2  -fPIC  -static -L command.o dumpconfig.o formats.o lvchange.o lvco
 
 FROM golang:1.13-alpine as dev
 RUN apk add --no-cache git ca-certificates gcc linux-headers musl-dev
-RUN adduser -D appuser
 COPY . /go/src/github.com/thebsdbox/BOOTy/
 WORKDIR /go/src/github.com/thebsdbox/BOOTy
-#RUN go get -u
-RUN go get github.com/schollz/progressbar 
-RUN go get github.com/micmonay/keybd_event
-RUN go get github.com/spf13/cobra
-RUN go get github.com/dustin/go-humanize
-RUN CGO_ENABLED=1 GOOS=linux go build -a -ldflags "-linkmode external -extldflags '-static' -s -w" -o booty
-
+RUN go get; CGO_ENABLED=1 GOOS=linux go build -a -ldflags "-linkmode external -extldflags '-static' -s -w" -o init
 
 FROM gcc:latest as Busybox
 RUN curl -O https://busybox.net/downloads/busybox-1.31.1.tar.bz2
 RUN tar -xf busybox*bz2
 WORKDIR busybox-1.31.1
-RUN make defconfig
-RUN make LDFLAGS=-static
-RUN mkdir -p initramfs/bin
-RUN mkdir -p initramfs/dev
-RUN mkdir -p initramfs/etc
-RUN mkdir -p initramfs/home
-RUN mkdir -p initramfs/mnt
-RUN mkdir -p initramfs/proc
-RUN mkdir -p initramfs/sys
-RUN mkdir -p initramfs/usr
+RUN make defconfig; make LDFLAGS=-static
+#RUN 
+#RUN mkdir -p initramfs/bin
+#RUN mkdir -p initramfs/dev
+#RUN mkdir -p initramfs/etc
+#RUN mkdir -p initramfs/home
+##RUN mkdir -p initramfs/proc
+#RUN mkdir -p initramfs/mnt
+#RUN mkdir -p initramfs/sys
+#RUN mkdir -p initramfs/usr
 
 RUN make LDFLAGS=-static CONFIG_PREFIX=./initramfs install
 WORKDIR initramfs 
@@ -50,25 +42,28 @@ WORKDIR initramfs
 #RUN mknod -m 0666 dev/null c 1 3
 #RUN mknod -m 0444 dev/random c 1 8
 #RUN mknod -m 0444 dev/urandom c 1 9
-RUN cp ../examples/udhcp/simple.script bin
+#RUN cp ../examples/udhcp/simple.script bin
 COPY --from=LVM /LVM2.2.03.09/tools/lvm sbin
-COPY --from=dev /go/src/github.com/thebsdbox/BOOTy/booty .
+COPY --from=dev /go/src/github.com/thebsdbox/BOOTy/init .
 
+# Begin building the init (could be code to do this)
+#RUN echo '#!/bin/sh' > ./init
+#RUN echo "mount -t proc none /proc" >> ./init
+#RUN echo "mount -t sysfs none /sys" >> ./init
 
-RUN echo '#!/bin/sh' > ./init
-RUN echo "mount -t proc none /proc" >> ./init
-RUN echo "mount -t sysfs none /sys" >> ./init
-
-RUN echo "echo /sbin/mdev > /proc/sys/kernel/hotplug" >> ./init
+#RUN echo "echo /sbin/mdev > /proc/sys/kernel/hotplug" >> ./init
 #echo "mdev -s" >> ./init
-RUN echo "ifconfig eth0 up" >> ./init
-RUN echo "udhcpc -t 5 -q -s /bin/simple.script" >> ./init
-RUN echo "exec /bin/sh" >> ./init
-RUN chmod +x init
+#RUN echo "ifconfig eth0 up" >> ./init
+#RUN echo "udhcpc -t 5 -q -s /bin/simple.script" >> ./init
+#RUN echo "exec /bin/sh" >> ./init
+
+#RUN chmod +x init
+
+#RUN mv ./booty ./init
 RUN apt-get update; apt-get install -y cpio
-RUN find . -print0 | cpio --null -ov --format=newc > initramfs.cpio 
-RUN gzip ./initramfs.cpio
-RUN mv ./initramfs.cpio.gz /
+RUN find . -print0 | cpio --null -ov --format=newc > ../initramfs.cpio 
+RUN gzip ../initramfs.cpio
+RUN mv ../initramfs.cpio.gz /
 #RUN tar -cvzf ../initramfs.tar.gz .
 #cd ..
 #echo "RAM DISK CREATED"
