@@ -13,7 +13,8 @@ The below command will build:
 
 It will then produce a simple `initramfs` that can be booted with a kernel.
 ```
-docker build -t init -f ./initrd.Dockerfile . ; docker run init:latest tar -cf - /initramfs.cpio.gz | tar xf -   
+docker build -t init -f ./initrd.Dockerfile . ; \
+docker run init:latest tar -cf - /initramfs.cpio.gz | tar xf -   
 ```
 
 ## BOOTy boot
