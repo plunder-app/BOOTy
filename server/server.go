@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"fmt"
@@ -65,7 +65,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Serve will start the webserver for BOOTy
-func Serve() {
+func main() {
 
 	fs := http.FileServer(http.Dir("./images"))
 	http.HandleFunc("/image", imageHandler)

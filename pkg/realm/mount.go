@@ -1,3 +1,5 @@
+//+build linux
+
 package realm
 
 import (
@@ -81,7 +83,9 @@ func DefaultMounts() *Mounts {
 		CreateMount: false,
 		EnableMount: false,
 		Name:        "sys",
+		Source:      "sysfs",
 		Path:        "/sys",
+		FSType:      "sysfs",
 		Mode:        0777,
 	}
 	m.Mount = append(m.Mount, sys)

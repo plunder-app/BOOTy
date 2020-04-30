@@ -1,3 +1,5 @@
+//+build linux
+
 package realm
 
 import (
@@ -15,10 +17,18 @@ import (
 
 const ifname = "eth0"
 
-var (
-//options = optionList{}
-//requestParams = byteList{}
-)
+// LeasedAddress is the currently leased address
+var LeasedAddress string
+
+// GetMAC will return a mac address
+func GetMAC() ([]byte, error) {
+	// retrieve interface from name
+	iface, err := net.InterfaceByName(ifname)
+	if err != nil {
+		return nil, err
+	}
+	return iface.HardwareAddr, nil
+}
 
 // DHCPClient starts the DHCP client listening for a lease
 func DHCPClient() error {
@@ -45,8 +55,12 @@ func DHCPClient() error {
 	client := dhclient.Client{
 		Iface: iface,
 		OnBound: func(lease *dhclient.Lease) {
+			// Set the lease string to be used in other places
+			LeasedAddress = lease.FixedAddress.String()
+
 			link, _ := netlink.LinkByName(iface.Name)
 
+			// Set address / netmask into cidr we can use to apply to interface
 			cidr := net.IPNet{
 				IP:   lease.FixedAddress,
 				Mask: lease.Netmask,
@@ -57,9 +71,10 @@ func DHCPClient() error {
 			if err != nil {
 				log.Errorf("Error adding %s to link %s", cidr.String(), iface.Name)
 			} else {
-				log.Printf("Adding %s to link %s", cidr.String(), iface.Name)
+				log.Printf("Adding address %s to link %s", cidr.String(), iface.Name)
 			}
 
+			// Apply default gateway so we can route outside
 			route := netlink.Route{
 				Scope: netlink.SCOPE_UNIVERSE,
 				Gw:    lease.ServerID,
