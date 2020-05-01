@@ -21,13 +21,13 @@ const ifname = "eth0"
 var LeasedAddress string
 
 // GetMAC will return a mac address
-func GetMAC() ([]byte, error) {
+func GetMAC() (string, error) {
 	// retrieve interface from name
 	iface, err := net.InterfaceByName(ifname)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	return iface.HardwareAddr, nil
+	return iface.HardwareAddr.String(), nil
 }
 
 // DHCPClient starts the DHCP client listening for a lease
@@ -130,6 +130,6 @@ func DHCPClient() error {
 			client.Rebind()
 		}
 	}
-	log.Errorf("DHCP client has ended")
-	return nil
+	//log.Errorf("DHCP client has ended")
+	//return nil
 }

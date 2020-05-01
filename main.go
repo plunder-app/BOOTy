@@ -1,11 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/thebsdbox/BOOTy/pkg/image"
 	"github.com/thebsdbox/BOOTy/pkg/plunderclient"
+	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
+	"github.com/thebsdbox/BOOTy/pkg/utils"
 
 	"github.com/thebsdbox/BOOTy/pkg/realm"
 	"github.com/thebsdbox/BOOTy/pkg/ux"
@@ -56,9 +58,44 @@ func main() {
 
 	log.Infoln("Beginning provisioning process")
 
-	err := plunderclient.GetServerConfig()
+	// What is needed
+
+	// 1. Disk to read/write to
+	// 2. Source/Destination to read/write from
+	// 3. Post tasks
+	// --- 1. Disk stretch
+	// --- 2. Post config?
+	mac, err := realm.GetMAC()
 	if err != nil {
-		fmt.Println("The BOOTYURL=x.x.x.x is missing from the boot flags, rebooting in 10 seconds")
+		log.Errorln(err)
+		realm.Shell()
+	}
+
+	cfg, err := plunderclient.GetConfigForAddress(utils.DashMac(mac))
+
+	if err != nil {
+		log.Errorf("Error with remote server [%v]", err)
+		log.Errorln("Rebooting in 10 seconds")
+		time.Sleep(time.Second * 10)
+		realm.Reboot()
+	}
+
+	switch cfg.Action {
+	case types.ReadImage:
+		err = image.Read(cfg.SourceDevice, cfg.DesintationAddress)
+		if err != nil {
+			log.Errorf("Read Image Error: [%v]", err)
+		}
+
+	case types.WriteImage:
+		err = image.Write(cfg.SourceImage, cfg.DestinationDevice)
+		if err != nil {
+			log.Errorf("Write Image Error: [%v]", err)
+
+		}
+
+	default:
+		log.Errorf("Unknown action [%s] passed to deployment image, restarting in 10 seconds", cfg.Action)
 		time.Sleep(time.Second * 10)
 		realm.Reboot()
 	}
@@ -76,6 +113,9 @@ func main() {
 	// }
 	// TODO - remove
 
-	realm.Shell()
+	if cfg.DropToShell == true {
+		realm.Shell()
+	}
+
 	realm.Reboot()
 }

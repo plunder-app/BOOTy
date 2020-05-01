@@ -58,3 +58,8 @@ func GetBlockDeviceSize(device string) (int64, error) {
 	size, _ := strconv.ParseInt(parsedData, 10, 64)
 	return size * 512, nil
 }
+
+// DashMac makes a mac address something that can be used in a URL
+func DashMac(mac string) string {
+	return strings.Replace(mac, ":", "-", -1)
+}
