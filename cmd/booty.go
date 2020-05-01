@@ -5,9 +5,6 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/thebsdbox/BOOTy/pkg/pull"
-	"github.com/thebsdbox/BOOTy/pkg/push"
-	"github.com/thebsdbox/BOOTy/pkg/server"
 )
 
 // Release - this struct contains the release information populated when building booty
@@ -22,9 +19,9 @@ var bootyCmd = &cobra.Command{
 }
 
 func init() {
-	bootyCmd.AddCommand(bootyPull)
-	bootyCmd.AddCommand(bootyPush)
-	bootyCmd.AddCommand(bootyServer)
+	// bootyCmd.AddCommand(bootyPull)
+	// bootyCmd.AddCommand(bootyPush)
+	// bootyCmd.AddCommand(bootyServer)
 	bootyCmd.AddCommand(bootyVersion)
 
 }
@@ -37,29 +34,29 @@ func Execute() {
 	}
 }
 
-var bootyPull = &cobra.Command{
-	Use:   "pull",
-	Short: "This is will direct BOOTy to pull and image from a remote server",
-	Run: func(cmd *cobra.Command, args []string) {
-		pull.Image()
-	},
-}
+// var bootyPull = &cobra.Command{
+// 	Use:   "pull",
+// 	Short: "This is will direct BOOTy to pull and image from a remote server",
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		pull.Image()
+// 	},
+// }
 
-var bootyPush = &cobra.Command{
-	Use:   "push",
-	Short: "This is will direct BOOTy to push the contents of a disk to a remote server",
-	Run: func(cmd *cobra.Command, args []string) {
-		push.Image()
-	},
-}
+// var bootyPush = &cobra.Command{
+// 	Use:   "push",
+// 	Short: "This is will direct BOOTy to push the contents of a disk to a remote server",
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		push.Image()
+// 	},
+// }
 
-var bootyServer = &cobra.Command{
-	Use:   "server",
-	Short: "This is for starting BOOTy as a simple (test) web server",
-	Run: func(cmd *cobra.Command, args []string) {
-		server.Serve()
-	},
-}
+// var bootyServer = &cobra.Command{
+// 	Use:   "server",
+// 	Short: "This is for starting BOOTy as a simple (test) web server",
+// 	Run: func(cmd *cobra.Command, args []string) {
+// 		server.Serve()
+// 	},
+// }
 
 var bootyVersion = &cobra.Command{
 	Use:   "version",

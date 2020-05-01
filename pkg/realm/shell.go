@@ -11,7 +11,9 @@ import (
 func Shell() {
 	// Shell stuff
 	log.Println("Starting Shell")
-	cmd := exec.Command("/bin/sh")
+
+	// TTY hack to support ctrl+c
+	cmd := exec.Command("/usr/bin/setsid", "cttyhack", "/bin/sh")
 	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 
 	err := cmd.Start()
