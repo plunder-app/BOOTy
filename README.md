@@ -64,3 +64,24 @@ go run server/server.go -action readImage \
 -destinationAddress http://192.168.0.95:3000/image \
 -sourceDevice /dev/sda    
 ```
+
+### Disk Support
+
+The below command will write the Image `http://192.168.0.95:3000/images/ubuntu.img` to `/dev/sda`, it will then grow the partition `1` (which is `/dev/sda1`) and it will grow the root volume `/dev/ubuntu-vg/root` to the full size of the underlying disk. Also for development purposes `-shell` will drop to a shell if the process fails.
+
+```
+go run server/server.go -action writeImage \
+-address 00:50:56:a5:0e:0f  \
+-sourceImage http://192.168.0.95:3000/images/ubuntu.img \
+-destinationDevice /dev/sda \
+-growPartition 1 \
+-lvmRoot /dev/ubuntu-vg/root \
+-shell 
+```
+
+### Debugging
+
+Two additional flags can be passed to debug:
+
+- `-shell` - drop to a shell if something failes
+- `-wipe` - wipe the provisioned disk if something fails
