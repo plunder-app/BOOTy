@@ -6,6 +6,7 @@ import "os"
 type Mount struct {
 	// Create the location on disk
 	CreateMount bool
+
 	// Enable the mount Source -> Path w/options
 	EnableMount bool
 
