@@ -34,6 +34,7 @@ type BootyConfig struct {
 	Action      string `json:"action"`
 	DryRun      bool   `json:"dryRun"`
 	DropToShell bool   `json:"dropToShell"`
+	WipeDevice  bool   `json:"wipeDevice"`
 
 	// Write image to disk from remote address
 	SourceImage       string `json:"sourceImage,omitempty"`
@@ -49,7 +50,6 @@ type BootyConfig struct {
 	GrowDisk bool `json:"growDisk"`
 
 	// Volume modifications (LVM2)
-	GrowVolume  bool   `json:"growVolume"`
-	PVSName     string `json:"pvsName"`
-	LVMRootName string `json:"lvmRootName"`
+	GrowPartition int    `json:"growPartition"`
+	LVMRootName   string `json:"lvmRootName"`
 }

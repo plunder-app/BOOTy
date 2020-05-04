@@ -3,6 +3,7 @@
 package realm
 
 import (
+	"fmt"
 	"os"
 	"syscall"
 
@@ -122,8 +123,9 @@ func (m *Mounts) CreateFolder() error {
 		if m.Mount[x].CreateMount == true {
 			err := os.MkdirAll(m.Mount[x].Path, m.Mount[x].Mode)
 			if err != nil {
-				log.Errorf("Folder[%s] create error [%v]", m.Mount[x].Path, err)
+				return fmt.Errorf("Folder[%s] create error [%v]", m.Mount[x].Path, err)
 			}
+			log.Infof("Folder created [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 		}
 	}
 	return nil
@@ -132,10 +134,10 @@ func (m *Mounts) CreateFolder() error {
 // CreateMount -
 func (m *Mounts) CreateMount() error {
 	for x := range m.Mount {
-		if m.Mount[x].CreateMount == true {
-			err := syscall.Mount(m.Mount[x].Name, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
+		if m.Mount[x].EnableMount == true {
+			err := syscall.Mount(m.Mount[x].Source, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
 			if err != nil {
-				log.Errorf("Mount [%s] create error [%v]", m.Mount[x].Name, err)
+				return fmt.Errorf("Mounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
 			}
 			log.Infof("Mounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 		}
@@ -146,18 +148,34 @@ func (m *Mounts) CreateMount() error {
 // CreateNamedMount -
 func (m *Mounts) CreateNamedMount(name string, remove bool) error {
 	for x := range m.Mount {
-		if m.Mount[x].Name == name && m.Mount[x].CreateMount == true {
-			err := syscall.Mount(m.Mount[x].Name, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
+		if m.Mount[x].Name == name && m.Mount[x].EnableMount == true {
+			err := syscall.Mount(m.Mount[x].Source, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
 			if err != nil {
-				log.Errorf("Mount [%s] create error [%v]", m.Mount[x].Name, err)
+				return fmt.Errorf("Mounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
 			}
+
+			log.Infof("Mounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 			// Remove this element
 			if remove {
 				m.Mount = append(m.Mount[:x], m.Mount[x+1:]...)
 			}
-			log.Infof("Mounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 			return nil
 		}
+	}
+	return nil
+}
+
+// UnMount - will unmount a partition
+func UnMount(name string) error {
+
+	for x := range m.Mount {
+		if m.Mount[x].Name == name {
+			err := syscall.Unmount(m.Mount[x].Path, m.Mount[x].Flags)
+		}
+		if err != nil {
+			return fmt.Errorf("UnMounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
+		}
+		log.Infof("unmounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 	}
 	return nil
 }

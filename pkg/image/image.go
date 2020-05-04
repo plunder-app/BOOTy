@@ -70,6 +70,14 @@ func Write(sourceImage, destinationDevice string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode > 300 {
+		// Customise response for the 404 to make degugging simpler
+		if resp.StatusCode == 404 {
+			return fmt.Errorf("%s not found", sourceImage)
+		}
+		return fmt.Errorf("%s", resp.Status)
+	}
+
 	var out io.Writer
 	f, err := os.OpenFile(destinationDevice, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {

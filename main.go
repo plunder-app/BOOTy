@@ -65,6 +65,7 @@ func main() {
 	// 3. Post tasks
 	// --- 1. Disk stretch
 	// --- 2. Post config?
+
 	mac, err := realm.GetMAC()
 	if err != nil {
 		log.Errorln(err)
@@ -85,13 +86,14 @@ func main() {
 		err = image.Read(cfg.SourceDevice, cfg.DesintationAddress)
 		if err != nil {
 			log.Errorf("Read Image Error: [%v]", err)
+			onError(cfg)
 		}
 
 	case types.WriteImage:
 		err = image.Write(cfg.SourceImage, cfg.DestinationDevice)
 		if err != nil {
 			log.Errorf("Write Image Error: [%v]", err)
-
+			onError(cfg)
 		}
 
 	default:
@@ -100,18 +102,52 @@ func main() {
 		realm.Reboot()
 	}
 
-	// bs, _ := utils.GetBlockDeviceSize("sda")
-	// fmt.Printf("/dev/sda is %d bytes\n", bs)
+	log.Infoln("Beginning Disk Management")
 
-	// cmdline, _ := utils.ParseCmdLine("")
-	// if _, ok := cmdline["PLNDRSVR"]; ok {
-	// 	fmt.Printf("Server has been set in boot flags \n")
-	// } else {
-	// 	fmt.Println("The PLNDRSVR=x.x.x.x is missing from the boot flags, rebooting in 10 seconds")
-	// 	time.Sleep(time.Second * 10)
-	// 	//realm.Reboot()
-	// }
-	// TODO - remove
+	err = realm.PartProbe(cfg.DestinationDevice)
+	if err != nil {
+		log.Errorf("Disk Error: [%v]", err)
+		onError(cfg)
+	}
+
+	err = realm.EnableLVM()
+	if err != nil {
+		log.Errorf("Disk Error: [%v]", err)
+		onError(cfg)
+	}
+
+	err = realm.MountRootVolume(cfg.LVMRootName)
+	if err != nil {
+		log.Errorf("Disk Error: [%v]", err)
+		onError(cfg)
+	}
+
+	err = realm.GrowRoot(cfg.DestinationDevice, cfg.LVMRootName, cfg.GrowPartition)
+	if err != nil {
+		log.Errorf("Disk Error: [%v]", err)
+		onError(cfg)
+	}
+
+	err = realm.UnMount("/mnt")
+	if err != nil {
+		log.Errorf("UnMounting Error: [%v]", err)
+		onError(cfg)
+	}
+
+	if cfg.DropToShell == true {
+		realm.Shell()
+	}
+
+	realm.Reboot()
+
+}
+
+// on Error we will execute the following steps
+func onError(cfg *types.BootyConfig) {
+
+	if cfg.WipeDevice == true {
+		realm.Wipe(cfg.DestinationDevice)
+	}
 
 	if cfg.DropToShell == true {
 		realm.Shell()

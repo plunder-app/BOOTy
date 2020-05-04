@@ -88,12 +88,17 @@ func main() {
 	flag.StringVar(&config.Action, "action", "", "The action that is being performed [readImage/writeImage]")
 	flag.BoolVar(&config.DryRun, "dryRun", false, "Only demonstrate the output from the actions")
 	flag.BoolVar(&config.DropToShell, "shell", false, "Start a shell")
+	flag.BoolVar(&config.WipeDevice, "wipe", false, "Wipe the device [OnError]")
+
+	flag.StringVar(&config.LVMRootName, "lvmRoot", "/dev/ubuntu-vg/root", "The path to the root Linux volume")
+	flag.IntVar(&config.GrowPartition, "growPartition", 1, "The partition on the destinationDevice that should be grown")
 
 	flag.StringVar(&config.SourceImage, "sourceImage", "", "The source for the image, typically a URL")
 	flag.StringVar(&config.SourceDevice, "sourceDevice", "", "The device that will be the source of the image [/dev/sda]")
 
 	flag.StringVar(&config.DesintationAddress, "destinationAddress", "", "The destination that the image will be writen too [url]")
 	flag.StringVar(&config.DestinationDevice, "destinationDevice", "", "The destination devicethat the image will be writen too [/dev/sda]")
+
 	flag.Parse()
 
 	if *rawAddress == "" {
