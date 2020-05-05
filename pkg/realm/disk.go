@@ -69,7 +69,7 @@ func EnableLVM() error {
 }
 
 // MountRootVolume - will create a mountpoint and mount the root volume
-func MountRootVolume(rootVolume string) error {
+func MountRootVolume(rootVolume string) (*Mounts, error) {
 	m := Mounts{}
 	root := Mount{
 		CreateMount: true,
@@ -106,14 +106,14 @@ func MountRootVolume(rootVolume string) error {
 
 	err := m.CreateFolder()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = m.CreateMount()
+	err = m.MountAll()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return &m, nil
 }
 
 // GrowRoot will grow the root filesystem
@@ -147,27 +147,6 @@ func GrowRoot(drive, volume string, partition int) error {
 		if err != nil {
 			return fmt.Errorf("Partition Probe  error [%v]", err)
 		}
-	}
-	return nil
-}
-
-// Disk will Start a userland shell
-func Disk() error {
-	// Shell stuff
-	log.Println("Growing disk")
-
-	// TTY hack to support ctrl+c
-	cmd := exec.Command("/usr/bin/setsid", "cttyhack", "/bin/sh")
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-
-	err := cmd.Start()
-	if err != nil {
-		return fmt.Errorf("Shell error [%v]", err)
-	}
-	log.Printf("Waiting for command to finish...")
-	err = cmd.Wait()
-	if err != nil {
-		return fmt.Errorf("Shell error [%v]", err)
 	}
 	return nil
 }

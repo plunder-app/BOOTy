@@ -131,8 +131,8 @@ func (m *Mounts) CreateFolder() error {
 	return nil
 }
 
-// CreateMount -
-func (m *Mounts) CreateMount() error {
+// MountAll -
+func (m *Mounts) MountAll() error {
 	for x := range m.Mount {
 		if m.Mount[x].EnableMount == true {
 			err := syscall.Mount(m.Mount[x].Source, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
@@ -145,8 +145,8 @@ func (m *Mounts) CreateMount() error {
 	return nil
 }
 
-// CreateNamedMount -
-func (m *Mounts) CreateNamedMount(name string, remove bool) error {
+// MountNamed -
+func (m *Mounts) MountNamed(name string, remove bool) error {
 	for x := range m.Mount {
 		if m.Mount[x].Name == name && m.Mount[x].EnableMount == true {
 			err := syscall.Mount(m.Mount[x].Source, m.Mount[x].Path, m.Mount[x].FSType, m.Mount[x].Flags, m.Mount[x].Options)
@@ -165,19 +165,41 @@ func (m *Mounts) CreateNamedMount(name string, remove bool) error {
 	return nil
 }
 
-// UnMount - will unmount a partition
-func UnMount(name string) error {
+// UnMountAll - will unmount all partitions
+func (m *Mounts) UnMountAll() error {
+
+	for x := range m.Mount {
+		err := syscall.Unmount(m.Mount[x].Path, int(m.Mount[x].Flags))
+
+		if err != nil {
+			return fmt.Errorf("Unmounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
+		}
+		return nil
+		log.Infof("Unmounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
+	}
+
+	return nil
+}
+
+// UnMountNamed - will unmount a partition
+func (m *Mounts) UnMountNamed(name string) error {
 
 	for x := range m.Mount {
 		if m.Mount[x].Name == name {
-			err := syscall.Unmount(m.Mount[x].Path, m.Mount[x].Flags)
+			err := syscall.Unmount(m.Mount[x].Path, syscall.MNT_FORCE)
+
+			if err != nil {
+				return fmt.Errorf("Unmounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
+			}
+
+			log.Infof("Unmounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
+			// Remove this element
+			m.Mount = append(m.Mount[:x], m.Mount[x+1:]...)
+			return nil
+
 		}
-		if err != nil {
-			return fmt.Errorf("UnMounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
-		}
-		log.Infof("unmounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
 	}
-	return nil
+	return fmt.Errorf("Unable to find mount [%s]", name)
 }
 
 // GetMount -

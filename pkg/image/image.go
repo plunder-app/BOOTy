@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	log "github.com/sirupsen/logrus"
 )
 
 var tick chan time.Time
@@ -86,10 +87,8 @@ func Write(sourceImage, destinationDevice string) error {
 	out = f
 	defer f.Close()
 
-	fmt.Printf("\n\n\n")
-
-	fmt.Printf("Beginning write of image [%s] to disk [%s]", filepath.Base(sourceImage), destinationDevice)
-	fmt.Printf("\n\n\n")
+	log.Infof("Beginning write of image [%s] to disk [%s]", filepath.Base(sourceImage), destinationDevice)
+	fmt.Printf("\n")
 	// Create our progress reporter and pass it to be used alongside our writer
 	ticker := time.NewTicker(500 * time.Millisecond)
 	counter := &WriteCounter{}
@@ -108,11 +107,6 @@ func Write(sourceImage, destinationDevice string) error {
 		return fmt.Errorf("Error writing %d bytes to disk [%s] -> %v", count, destinationDevice, err)
 	}
 	ticker.Stop()
-	fmt.Printf("\n\n\n")
-
-	fmt.Println("--------------------------------------------------------------------------------")
-	fmt.Printf("\n\n\n\n")
-
 	return nil
 }
 

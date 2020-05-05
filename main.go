@@ -39,13 +39,13 @@ func main() {
 	// Create all folders
 	m.CreateFolder()
 	// Ensure that /dev is mounted (first)
-	m.CreateNamedMount("dev", true)
+	m.MountNamed("dev", true)
 
 	// Create all devices
 	d.CreateDevice()
 
 	// Mount any additional mounts
-	m.CreateMount()
+	m.MountAll()
 
 	log.Println("Starting DHCP client")
 	go realm.DHCPClient()
@@ -116,7 +116,7 @@ func main() {
 		onError(cfg)
 	}
 
-	err = realm.MountRootVolume(cfg.LVMRootName)
+	rv, err := realm.MountRootVolume(cfg.LVMRootName)
 	if err != nil {
 		log.Errorf("Disk Error: [%v]", err)
 		onError(cfg)
@@ -128,7 +128,34 @@ func main() {
 		onError(cfg)
 	}
 
-	err = realm.UnMount("/mnt")
+	// Start the networking configuration (UBUNTU ONLY)
+	log.Infoln("Starting Networking configuration")
+	err = realm.WriteNetPlan("/mnt", cfg.Address, cfg.Gateway)
+	if err != nil {
+		log.Errorf("Network Error: [%v]", err)
+		onError(cfg)
+	}
+
+	// Apply the networking configuration (UBUNTU ONLY)
+	log.Infoln("Applying Networking configuration")
+	err = realm.ApplyNetplan("/mnt")
+	if err != nil {
+		log.Errorf("Network Error: [%v]", err)
+		onError(cfg)
+	}
+
+	log.Infoln("Un Mounting boot volume")
+	err = rv.UnMountNamed("dev")
+	if err != nil {
+		log.Errorf("UnMounting Error: [%v]", err)
+		onError(cfg)
+	}
+	err = rv.UnMountNamed("proc")
+	if err != nil {
+		log.Errorf("UnMounting Error: [%v]", err)
+		onError(cfg)
+	}
+	err = rv.UnMountAll()
 	if err != nil {
 		log.Errorf("UnMounting Error: [%v]", err)
 		onError(cfg)
@@ -138,6 +165,8 @@ func main() {
 		realm.Shell()
 	}
 
+	log.Infoln("BOOTy is now exiting, system will reboot")
+	time.Sleep(time.Second * 2)
 	realm.Reboot()
 
 }

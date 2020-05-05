@@ -52,4 +52,8 @@ type BootyConfig struct {
 	// Volume modifications (LVM2)
 	GrowPartition int    `json:"growPartition"`
 	LVMRootName   string `json:"lvmRootName"`
+
+	// Network modifcations
+	Address string `json:"address,omitempty"`
+	Gateway string `json:"gateway,omitempty"`
 }
