@@ -51,7 +51,7 @@ The `writeImage` action will instruct the new server on boot to pull the `-sourc
 
 ```
 go run server/server.go -action writeImage \
--address 00:50:56:a5:0e:0f \
+-mac 00:50:56:a5:0e:0f \
 -sourceImage http://192.168.0.95:3000/images/ubuntu.img \
 -destinationDevice /dev/sda    
 ```
@@ -60,7 +60,7 @@ The `readImage` action should be used when network booting a server that already
 
 ```
 go run server/server.go -action readImage \
--address 00:50:56:a5:0e:0f \
+-mac 00:50:56:a5:0e:0f \
 -destinationAddress http://192.168.0.95:3000/image \
 -sourceDevice /dev/sda    
 ```
@@ -71,12 +71,28 @@ The below command will write the Image `http://192.168.0.95:3000/images/ubuntu.i
 
 ```
 go run server/server.go -action writeImage \
--address 00:50:56:a5:0e:0f  \
+-mac 00:50:56:a5:0e:0f  \
 -sourceImage http://192.168.0.95:3000/images/ubuntu.img \
 -destinationDevice /dev/sda \
 -growPartition 1 \
 -lvmRoot /dev/ubuntu-vg/root \
 -shell 
+```
+
+## Network Support
+
+With `BOOTy` we can now configure all of the required network settings that are needed to set a static address for a host.
+
+```
+ go run server/server.go \
+ -mac 00:50:56:a5:0e:0f \
+ -action writeImage \
+ -sourceImage http://192.168.0.95:3000/images/ubuntu.img \
+ -destinationDevice /dev/sda \
+ -growPartition 1 \
+ -lvmRoot /dev/ubuntu-vg/root \
+ -address 172.16.1.126/24 \
+ -gateway 172.16.1.1
 ```
 
 ### Debugging
