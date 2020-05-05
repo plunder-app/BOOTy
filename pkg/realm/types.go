@@ -42,3 +42,28 @@ type Device struct {
 type Devices struct {
 	Device []Device
 }
+
+// Netplan outlines the Debian netplan configuration
+type Netplan struct {
+	Network struct {
+		Ethernets map[string]interface{} `yaml:"ethernets"`
+		Version   int                    `yaml:"version"`
+		Renderer  string                 `yaml:"renderer"`
+	} `yaml:"network"`
+}
+
+// Ethernets defines a connection
+type Ethernets struct {
+	Match struct {
+		Macaddress string `yaml:"macaddress,omitempty"`
+	} `yaml:"match,omitempty"`
+	Addresses   []string `yaml:"addresses,omitempty"`
+	Dhcp4       bool     `yaml:"dhcp4"`
+	Optional    bool     `yaml:"optional,omitempty"`
+	SetName     string   `yaml:"set-name,omitempty"`
+	Gateway4    string   `yaml:"gateway4,omitempty"`
+	Nameservers struct {
+		Search    []string `yaml:"search,omitempty"`
+		Addresses []string `yaml:"addresses,omitempty"`
+	} `yaml:"nameservers,omitempty"`
+}

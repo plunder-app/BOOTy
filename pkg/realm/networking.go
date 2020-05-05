@@ -3,6 +3,7 @@
 package realm
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
@@ -10,12 +11,15 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
+	"gopkg.in/yaml.v2"
 
 	"github.com/digineo/go-dhclient"
 	"github.com/google/gopacket/layers"
 )
 
 const ifname = "eth0"
+
+const netplanPath = "/etc/netplan/plunder_netplan.yaml"
 
 // LeasedAddress is the currently leased address
 var LeasedAddress string
@@ -28,6 +32,78 @@ func GetMAC() (string, error) {
 		return "", err
 	}
 	return iface.HardwareAddr.String(), nil
+}
+
+// WriteNetPlan - will write a netplan to disk
+func WriteNetPlan(chroot, address, gateway string) error {
+
+	// Find the mac address of the adapter (interface)
+	// TODO - make this customisable
+	mac, err := GetMAC()
+	if err != nil {
+		return err
+	}
+
+	// Create the chroot path
+	chrootPath := fmt.Sprintf("%s%s", chroot, netplanPath)
+
+	n := Netplan{}
+	n.Network.Version = 2
+	n.Network.Renderer = "networkd"
+	n.Network.Ethernets = make(map[string]interface{})
+	e := Ethernets{}
+	e.Match.Macaddress = mac
+	e.Dhcp4 = false
+	e.Addresses = []string{address}
+	e.Gateway4 = gateway
+	e.SetName = "eth0"
+	n.Network.Ethernets["eth0"] = e
+	b, err := yaml.Marshal(n)
+	if err != nil {
+		return err
+	}
+	// TODO - remove netplan output
+	fmt.Printf("\n%s\n", b)
+
+	f, err := os.Create(chrootPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(b)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ApplyNetplan - this will be done through an /etc/rc.local (TODO)
+func ApplyNetplan(chroot string) error {
+
+	chrootPath := fmt.Sprintf("%s%s", chroot, "/etc/rc.local")
+
+	//rclocal := "#!/bin/sh -e\n/usr/sbin/netplan apply\ndd if=/dev/zero of=/dev/sda bs=1024k count=50"
+	rclocal := "#!/bin/sh -e\n/usr/sbin/netplan apply\nrm /etc/rc.local"
+
+	f, err := os.Create(chrootPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write([]byte(rclocal))
+	if err != nil {
+		return err
+	}
+
+	// set executable
+	err = os.Chmod(chrootPath, 0777)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // DHCPClient starts the DHCP client listening for a lease

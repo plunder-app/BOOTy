@@ -80,8 +80,7 @@ func configHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 
 	// Server Address
-	rawAddress := flag.String("address", "", "The mac address of a server")
-	var address string
+	rawAddress := flag.String("mac", "", "The mac address of a server")
 
 	// Build configuration from flags
 	var config types.BootyConfig
@@ -99,15 +98,18 @@ func main() {
 	flag.StringVar(&config.DesintationAddress, "destinationAddress", "", "The destination that the image will be writen too [url]")
 	flag.StringVar(&config.DestinationDevice, "destinationDevice", "", "The destination devicethat the image will be writen too [/dev/sda]")
 
+	flag.StringVar(&config.Address, "address", "", "The network address to set on the provisioned OS [address/subnet]")
+	flag.StringVar(&config.Gateway, "gateway", "", "The gateway address to be set on the provisioned OS")
+
 	flag.Parse()
 
 	if *rawAddress == "" {
 		log.Warnln("No Mac address passed for BOOTy configuration")
 	} else {
 
-		address = utils.DashMac(*rawAddress)
-		http.HandleFunc(fmt.Sprintf("/booty/%s.bty", address), configHandler)
-		log.Infof("handler for [%s.bty] generated", address)
+		dashmac := utils.DashMac(*rawAddress)
+		http.HandleFunc(fmt.Sprintf("/booty/%s.bty", dashmac), configHandler)
+		log.Infof("handler for [%s.bty] generated", dashmac)
 		data, _ = json.Marshal(config)
 	}
 
