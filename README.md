@@ -84,9 +84,8 @@ go run server/server.go -action writeImage \
 With `BOOTy` we can now configure all of the required network settings that are needed to set a static address for a host.
 
 ```
- go run server/server.go \
+ go run server/server.go -action writeImage \
  -mac 00:50:56:a5:0e:0f \
- -action writeImage \
  -sourceImage http://192.168.0.95:3000/images/ubuntu.img \
  -destinationDevice /dev/sda \
  -growPartition 1 \
