@@ -88,7 +88,6 @@ func Write(sourceImage, destinationDevice string) error {
 	defer f.Close()
 
 	log.Infof("Beginning write of image [%s] to disk [%s]", filepath.Base(sourceImage), destinationDevice)
-	fmt.Printf("\n")
 	// Create our progress reporter and pass it to be used alongside our writer
 	ticker := time.NewTicker(500 * time.Millisecond)
 	counter := &WriteCounter{}
@@ -106,6 +105,8 @@ func Write(sourceImage, destinationDevice string) error {
 	if err != nil {
 		return fmt.Errorf("Error writing %d bytes to disk [%s] -> %v", count, destinationDevice, err)
 	}
+	fmt.Printf("\n")
+
 	ticker.Stop()
 	return nil
 }
