@@ -174,8 +174,8 @@ func (m *Mounts) UnMountAll() error {
 		if err != nil {
 			return fmt.Errorf("Unmounting [%s] -> [%s] error [%v]", m.Mount[x].Source, m.Mount[x].Path, err)
 		}
-		return nil
 		log.Infof("Unmounted [%s] -> [%s]", m.Mount[x].Name, m.Mount[x].Path)
+		return nil
 	}
 
 	return nil

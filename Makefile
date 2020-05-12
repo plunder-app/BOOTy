@@ -52,7 +52,7 @@ demo:
 
 # This is typically only for quick testing
 dockerx86:
-	@docker buildx build  --platform linux/amd64 --push -t $(REPOSITORY)/$(TARGET):$(DOCKERTAG) .
+	@docker buildx build  --platform linux/amd64 --load -t $(REPOSITORY)/$(TARGET):$(DOCKERTAG) -f initrd.Dockerfile .
 	@echo New Multi Architecture Docker image created
 
 docker:

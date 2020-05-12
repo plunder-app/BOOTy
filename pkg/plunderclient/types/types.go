@@ -54,6 +54,7 @@ type BootyConfig struct {
 	LVMRootName   string `json:"lvmRootName"`
 
 	// Network modifcations
-	Address string `json:"address,omitempty"`
-	Gateway string `json:"gateway,omitempty"`
+	Address    string `json:"address,omitempty"`
+	Gateway    string `json:"gateway,omitempty"`
+	NameServer string `json:"nameserver,omitempty"`
 }
