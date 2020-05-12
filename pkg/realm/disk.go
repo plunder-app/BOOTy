@@ -116,8 +116,8 @@ func MountRootVolume(rootVolume string) (*Mounts, error) {
 	return &m, nil
 }
 
-// GrowRoot will grow the root filesystem
-func GrowRoot(drive, volume string, partition int) error {
+// GrowLVMRoot will grow the root filesystem
+func GrowLVMRoot(drive, volume string, partition int) error {
 	// chroot /mnt /usr/bin/growpart /dev/sda 1
 	// chroot /mnt /sbin/pvresize /dev/sda1
 	// chroot /mnt /sbin/lvresize -l +100%FREE /dev/ubuntu-vg/root

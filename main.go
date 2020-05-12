@@ -122,7 +122,7 @@ func main() {
 		onError(cfg)
 	}
 
-	err = realm.GrowRoot(cfg.DestinationDevice, cfg.LVMRootName, cfg.GrowPartition)
+	err = realm.GrowLVMRoot(cfg.DestinationDevice, cfg.LVMRootName, cfg.GrowPartition)
 	if err != nil {
 		log.Errorf("Disk Error: [%v]", err)
 		onError(cfg)
@@ -130,7 +130,7 @@ func main() {
 
 	// Start the networking configuration (UBUNTU ONLY)
 	log.Infoln("Starting Networking configuration")
-	err = realm.WriteNetPlan("/mnt", cfg.Address, cfg.Gateway)
+	err = realm.WriteNetPlan("/mnt", cfg)
 	if err != nil {
 		log.Errorf("Network Error: [%v]", err)
 		onError(cfg)
@@ -181,6 +181,7 @@ func onError(cfg *types.BootyConfig) {
 	if cfg.DropToShell == true {
 		realm.Shell()
 	}
-
+	// Time to see the error
+	time.Sleep(time.Second * 2)
 	realm.Reboot()
 }

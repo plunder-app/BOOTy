@@ -10,6 +10,8 @@ import (
 	"syscall"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
+	"github.com/thebsdbox/BOOTy/pkg/utils"
 	"github.com/vishvananda/netlink"
 	"gopkg.in/yaml.v2"
 
@@ -35,7 +37,7 @@ func GetMAC() (string, error) {
 }
 
 // WriteNetPlan - will write a netplan to disk
-func WriteNetPlan(chroot, address, gateway string) error {
+func WriteNetPlan(chroot string, cfg *types.BootyConfig) error {
 
 	// Find the mac address of the adapter (interface)
 	// TODO - make this customisable
@@ -47,6 +49,12 @@ func WriteNetPlan(chroot, address, gateway string) error {
 	// Create the chroot path
 	chrootPath := fmt.Sprintf("%s%s", chroot, netplanPath)
 
+	// Clean Netplan directory
+	err = utils.ClearDir(fmt.Sprintf("%s%s", chroot, "/etc/netplan/"))
+	if err != nil {
+		return err
+	}
+
 	n := Netplan{}
 	n.Network.Version = 2
 	n.Network.Renderer = "networkd"
@@ -54,9 +62,10 @@ func WriteNetPlan(chroot, address, gateway string) error {
 	e := Ethernets{}
 	e.Match.Macaddress = mac
 	e.Dhcp4 = false
-	e.Addresses = []string{address}
-	e.Gateway4 = gateway
+	e.Addresses = []string{cfg.Address}
+	e.Gateway4 = cfg.Gateway
 	e.SetName = "eth0"
+	e.Nameservers.Addresses = append(e.Nameservers.Addresses, cfg.NameServer)
 	n.Network.Ethernets["eth0"] = e
 	b, err := yaml.Marshal(n)
 	if err != nil {

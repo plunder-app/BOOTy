@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -62,4 +64,16 @@ func GetBlockDeviceSize(device string) (int64, error) {
 // DashMac makes a mac address something that can be used in a URL
 func DashMac(mac string) string {
 	return strings.Replace(mac, ":", "-", -1)
+}
+
+// ClearDir is a helper function to remove all files in a directory
+func ClearDir(dir string) error {
+	names, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	for _, entery := range names {
+		os.RemoveAll(path.Join([]string{dir, entery.Name()}...))
+	}
+	return nil
 }
