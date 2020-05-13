@@ -59,6 +59,13 @@ docker:
 	@docker buildx build  --platform linux/amd64,linux/arm64,linux/arm/v7 --push -t $(REPOSITORY)/$(TARGET):$(DOCKERTAG) -f initrd.Dockerfile .
 	@echo New Multi Architecture Docker image created
 
+# This is typically only for quick testing
+getramdisk:
+
+	@ID=$$(docker create $(REPOSITORY)/$(TARGET):$(DOCKERTAG) null); \
+	docker cp $$ID:/initramfs.cpio.gz initramfs.cpio.gz ; docker rm $$ID
+	@echo Extracted ramdisk
+
 simplify:
 	@gofmt -s -l -w $(SRC)
 
