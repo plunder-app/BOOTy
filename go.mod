@@ -12,6 +12,6 @@ require (
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v0.0.0-20200228145645-a159d7cc708b
 	golang.org/x/net v0.0.0-20200506145744-7e3656a0809f // indirect
-	golang.org/x/sys v0.0.0-20200511232937-7e40ca221e25 // indirect
+	golang.org/x/sys v0.0.0-20200513112337-417ce2331b5c // indirect
 	gopkg.in/yaml.v2 v2.3.0
 )
