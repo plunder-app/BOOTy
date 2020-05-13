@@ -9,9 +9,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/plunder-app/BOOTy/pkg/plunderclient/types"
+	"github.com/plunder-app/BOOTy/pkg/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
-	"github.com/thebsdbox/BOOTy/pkg/utils"
 	"github.com/vishvananda/netlink"
 	"gopkg.in/yaml.v2"
 

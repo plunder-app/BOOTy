@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/dustin/go-humanize"
-	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
-	"github.com/thebsdbox/BOOTy/pkg/utils"
+	"github.com/plunder-app/BOOTy/pkg/plunderclient/types"
+	"github.com/plunder-app/BOOTy/pkg/utils"
 )
 
 // WriteCounter counts the number of bytes written to it. It implements to the io.Writer interface
