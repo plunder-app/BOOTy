@@ -1,4 +1,4 @@
-module github.com/thebsdbox/BOOTy
+module github.com/plunder-app/BOOTy
 
 go 1.14
 
@@ -10,5 +10,5 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/vishvananda/netlink v1.1.0
 	github.com/zcalusic/sysinfo v0.0.0-20200228145645-a159d7cc708b
-	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.3.0
 )
