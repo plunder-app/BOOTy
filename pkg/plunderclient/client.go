@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/plunder-app/BOOTy/pkg/plunderclient/types"
 	log "github.com/sirupsen/logrus"
-	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
 )
 
 // GetConfigForAddress will retrieve the configuraiton for a server (mac address)

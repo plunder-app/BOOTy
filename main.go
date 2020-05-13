@@ -3,14 +3,14 @@ package main
 import (
 	"time"
 
+	"github.com/plunder-app/BOOTy/pkg/image"
+	"github.com/plunder-app/BOOTy/pkg/plunderclient"
+	"github.com/plunder-app/BOOTy/pkg/plunderclient/types"
+	"github.com/plunder-app/BOOTy/pkg/utils"
 	log "github.com/sirupsen/logrus"
-	"github.com/thebsdbox/BOOTy/pkg/image"
-	"github.com/thebsdbox/BOOTy/pkg/plunderclient"
-	"github.com/thebsdbox/BOOTy/pkg/plunderclient/types"
-	"github.com/thebsdbox/BOOTy/pkg/utils"
 
-	"github.com/thebsdbox/BOOTy/pkg/realm"
-	"github.com/thebsdbox/BOOTy/pkg/ux"
+	"github.com/plunder-app/BOOTy/pkg/realm"
+	"github.com/plunder-app/BOOTy/pkg/ux"
 )
 
 func main() {
