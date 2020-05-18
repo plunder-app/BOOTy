@@ -31,10 +31,12 @@ const (
 // BootyConfig defines the data passed to the BOOTy initramdisk
 type BootyConfig struct {
 	// Defines what action the deployment will take
-	Action      string `json:"action"`
-	DryRun      bool   `json:"dryRun"`
-	DropToShell bool   `json:"dropToShell"`
-	WipeDevice  bool   `json:"wipeDevice"`
+	Action string `json:"action"`
+
+	// Disk actions ->
+
+	// Data should be compressed or is compressed
+	Compressed bool `json:"compressed"`
 
 	// Write image to disk from remote address
 	SourceImage       string `json:"sourceImage,omitempty"`
@@ -57,4 +59,9 @@ type BootyConfig struct {
 	Address    string `json:"address,omitempty"`
 	Gateway    string `json:"gateway,omitempty"`
 	NameServer string `json:"nameserver,omitempty"`
+
+	// Debugging, troubleshooting
+	DryRun      bool `json:"dryRun"`
+	DropToShell bool `json:"dropToShell"`
+	WipeDevice  bool `json:"wipeDevice"`
 }

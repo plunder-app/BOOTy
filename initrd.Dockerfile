@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 
 # Build LVM2 as an init
-FROM gcc:latest as LVM
+FROM gcc:10.1.0 as LVM
 RUN wget https://mirrors.kernel.org/sourceware/lvm2/LVM2.2.03.09.tgz
 RUN tar -xf LVM2.2.03.09.tgz
 WORKDIR LVM2.2.03.09
@@ -16,7 +16,7 @@ WORKDIR tools
 RUN  gcc -O2  -fPIC  -static -L command.o dumpconfig.o formats.o lvchange.o lvconvert.o lvconvert_poll.o lvcreate.o lvdisplay.o lvextend.o lvmcmdline.o lvmdiskscan.o lvpoll.o lvreduce.o lvremove.o lvrename.o lvresize.o lvscan.o polldaemon.o pvchange.o pvck.o pvcreate.o pvdisplay.o pvmove.o pvmove_poll.o pvremove.o pvresize.o pvscan.o reporter.o segtypes.o tags.o toollib.o vgcfgbackup.o vgcfgrestore.o vgchange.o vgck.o vgcreate.o vgdisplay.o vgexport.o vgextend.o vgimport.o vgimportclone.o vgmerge.o vgmknodes.o vgreduce.o vgremove.o vgrename.o vgscan.o vgsplit.o lvm-static.o ../lib/liblvm-internal.a ../libdaemon/client/libdaemonclient.a ../device_mapper/libdevice-mapper.a ../base/libbase.a  -lm -lblkid -laio -o lvm -lpthread -luuid ./liblvm2cmd.a  
 
 # Build scripted fdisk (sfdisk)
-FROM gcc:latest as sfdisk
+FROM gcc:10.1.0 as sfdisk
 RUN apt-get update -y; apt-get install -y bison autopoint gettext
 RUN git clone https://github.com/karelzak/util-linux.git
 WORKDIR util-linux
@@ -36,7 +36,7 @@ RUN --mount=type=cache,sharing=locked,id=gomod,target=/go/pkg/mod/cache \
 #RUN go get; CGO_ENABLED=1 GOOS=linux go build -a -ldflags "-linkmode external -extldflags '-static' -s -w" -o init
 
 # Build Busybox
-FROM gcc:latest as Busybox
+FROM gcc:10.1.0 as Busybox
 RUN apt-get update; apt-get install -y cpio
 RUN curl -O https://busybox.net/downloads/busybox-1.31.1.tar.bz2
 RUN tar -xf busybox*bz2

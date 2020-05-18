@@ -83,18 +83,24 @@ func main() {
 
 	switch cfg.Action {
 	case types.ReadImage:
-		err = image.Read(cfg.SourceDevice, cfg.DesintationAddress)
+		err = image.Read(cfg.SourceDevice, cfg.DesintationAddress, mac, cfg.Compressed)
 		if err != nil {
 			log.Errorf("Read Image Error: [%v]", err)
 			onError(cfg)
 		}
+		log.Infoln("Image written succesfully, restarting in 5 seconds")
+		time.Sleep(time.Second * 5)
+		realm.Reboot()
 
 	case types.WriteImage:
-		err = image.Write(cfg.SourceImage, cfg.DestinationDevice)
+		err = image.Write(cfg.SourceImage, cfg.DestinationDevice, cfg.Compressed)
 		if err != nil {
 			log.Errorf("Write Image Error: [%v]", err)
 			onError(cfg)
 		}
+		// log.Infoln("Image written succesfully, restarting in 5 seconds")
+		// time.Sleep(time.Second * 5)
+		// realm.Reboot()
 
 	default:
 		log.Errorf("Unknown action [%s] passed to deployment image, restarting in 10 seconds", cfg.Action)
